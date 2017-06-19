@@ -1,3 +1,5 @@
 # GrafikaZegar
 
 Elo
+
+No siema
