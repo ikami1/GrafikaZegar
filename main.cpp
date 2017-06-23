@@ -15,7 +15,7 @@ float speed = 3.14;
 float speed_right = 0;
 float speed_direction = 0;
 // position
-glm::vec3 position = glm::vec3(0.0f, 0.0f, -5.0f);
+vec3 position = vec3(0.0f, 0.0f, -5.0f);
 // horizontal angle : toward -Z
 float horizontalAngle = -PI;
 // vertical angle : 0, look at the horizon
@@ -58,88 +58,118 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void initOpenGLProgram(GLFWwindow* window) {
 	//************Place any code here that needs to be executed once, at the program start************
 	glfwSetKeyCallback(window, key_callback); //Register key event processing callback procedure
+	glEnable(GL_DEPTH_TEST);		//wlaczenie z bufora
+	glEnable(GL_LIGHTING);			//wlaczenie cieniowania
+	glEnable(GL_LIGHT0);			//biale zrodlo swiatla za obserwatorem
+	glEnable(GL_COLOR_MATERIAL);	//wlaczenie kolorowania wielokatow
+	glShadeModel(GL_SMOOTH);		//cieniowanie
 	glClearColor(1,1,1,1);
 }
 
-//Models::Sphere mySphere(2, 36, 36);
-
-
-//Drawing procedure
-void drawScene(GLFWwindow* window, float angle, float distance_cam_z, float distance_cam_y, float deltaTime) {
-	//************Place any code here that draws something inside the window******************l
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+mat4 macierzWidoku(GLFWwindow* window, float deltaTime) {
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
 	// Reset mouse position for next frame
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
-	glfwSetCursorPos(window, width/2, height/2);
+	glfwSetCursorPos(window, width / 2, height / 2);
 
 	// Compute new orientation
-	horizontalAngle += mouseSpeed * deltaTime * float(width/2-xpos);
-	verticalAngle += mouseSpeed * deltaTime * float(height/2-ypos);
+	horizontalAngle += mouseSpeed * deltaTime * float(width / 2 - xpos);
+	verticalAngle += mouseSpeed * deltaTime * float(height / 2 - ypos);
 
-	glm::vec3 direction( cos(verticalAngle)*sin(horizontalAngle), sin(verticalAngle), cos(verticalAngle)*cos(horizontalAngle) );
+	vec3 direction(cos(verticalAngle)*sin(horizontalAngle), sin(verticalAngle), cos(verticalAngle)*cos(horizontalAngle));
 	direction *= -1.0f;
 	// Right vector
-	glm::vec3 right = glm::vec3( sin(horizontalAngle-3.14f/2.0f), 0, cos(horizontalAngle-3.14f/2.0f) );
+	vec3 right = vec3(sin(horizontalAngle - 3.14f / 2.0f), 0, cos(horizontalAngle - 3.14f / 2.0f));
 
 	// Up vector : perpendicular to both direction and right
-	glm::vec3 up = glm::cross(right, direction) * -1.0f;
+	vec3 up = cross(right, direction) * -1.0f;
 
 	position += right * deltaTime * speed_right;
 	position += direction * deltaTime * speed_direction;
 
-	glm::mat4 ViewMatrix = glm::lookAt(
+
+	return lookAt(
 		position,           // Camera is here
 		position + direction, // and looks here : at the same position, plus "direction"
 		up                  // Head is up (set to 0,-1,0 to look upside-down)
 	);
+}
+
+mat4 ustawPinion(mat4 Mpinion, float angle) {
+	Mpinion = rotate(Mpinion, 90.0f*PI / 180, vec3(1.0f, 0.0f, 0.0f));
+	Mpinion = translate(Mpinion, vec3(0.0f, -1.0f, -0.45f));
+	Mpinion = rotate(Mpinion, 7.5f*PI / 180, vec3(0.0f, 1.0f, 0.0f));
+	Mpinion = rotate(Mpinion, -angle*2, vec3(0.0f, 1.0f, 0.0f));
+	Mpinion = scale(Mpinion, vec3(0.05f, 0.05f, 0.05f));
+	return Mpinion;
+}
 
 
+//Drawing procedure
+void drawScene(GLFWwindow* window, float angle, float deltaTime) {
+	//************Place any code here that draws something inside the window******************l
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	angle /= 3600.0f;		// angle/10 to jeden obrot godzinowej co 10 sekund
 
-
-
+	
+	mat4 V = macierzWidoku(window, deltaTime);
 	mat4 M = mat4(1.0f);
-	/*mat4 V = lookAt(
-		vec3(0.0f, distance_cam_y + 0.0f, distance_cam_z + -5.0f),
-		vec3(0.0f, distance_cam_y + 0.0f, distance_cam_z + 0.0f),
-		vec3(0.0f, distance_cam_y + 1.0f, distance_cam_z + 0.0f));*/
-	mat4 V = ViewMatrix;
-
+	vec3 skala = vec3(0.02f, 0.02f, 0.02f);
 	mat4 P = perspective(50 * PI / 180, 1.0f, 1.0f, 50.0f);
-	M = translate(M, vec3(1.0f, 1.0f, 0.0f));
-	M = rotate(M, -90.0f*PI / 180, vec3(1.0f, 0.0f, 0.0f));
-	mat4 M1 = M;
-	M = rotate(M, angle / 10, vec3(0.0f, 1.0f, 0.0f));
-	M = scale(M, vec3(0.05f, 0.05f, 0.05f));
-	//M = scale(M, vec3(0.1f, 0.1f, 0.1f));
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(value_ptr(P));
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(value_ptr(V*M));
 
-	glEnable(GL_LIGHTING);			//wlaczenie cieniowania
-	glEnable(GL_LIGHT0);			//biale zrodlo swiatla za obserwatorem
-	glEnable(GL_DEPTH_TEST);		//wlaczenie z bufora
-	glEnable(GL_COLOR_MATERIAL);	//wlaczenie kolorowania wielokatow
-	glShadeModel(GL_SMOOTH);		//cieniowanie
+	/*mat4 Mgearforpinion = M;
+	Mgearforpinion = translate(Mgearforpinion, vec3(1.0f, 1.0f, 0.0f));
+	Mgearforpinion = rotate(Mgearforpinion, -90.0f*PI / 180, vec3(1.0f, 0.0f, 0.0f));
+	mat4 Mpinion = Mgearforpinion;
+	Mgearforpinion = rotate(Mgearforpinion, angle, vec3(0.0f, 1.0f, 0.0f));
+	Mgearforpinion = scale(Mgearforpinion, vec3(0.05f, 0.05f, 0.05f));
 
-	glColor3d(0.3, 0.3, 0.1);
+	glLoadMatrixf(value_ptr(V*Mgearforpinion));
+	glColor3d(1, 1, 1);
 	Models::gearforpinion_x.drawSolid();
 
-	M1 = rotate(M1, 90.0f*PI / 180, vec3(1.0f, 0.0f, 0.0f));
-	M1 = translate(M1, vec3(0.0f, -1.0f, -0.45f));
-	M1 = rotate(M1, -angle / 5, vec3(0.0f, 1.0f, 0.0f));
-	M1 = scale(M1, vec3(0.05f, 0.05f, 0.05f));
-	glLoadMatrixf(value_ptr(V*M1));
-
+	Mpinion = ustawPinion(Mpinion, angle);
+	glLoadMatrixf(value_ptr(V*Mpinion));
 	glColor3d(0.5, 0.5, 0.5);
-	Models::pinion_x.drawSolid();
-	//Models::gear16_2.drawSolid();
+	Models::pinion_x.drawSolid();*/
+	glColor3d(0.5, 0.5, 0.5);
+
+	mat4 Mgear45 = M;
+	Mgear45 = translate(Mgear45, vec3(0.0f, 0.0f, 2.0f));
+	Mgear45 = rotate(Mgear45, -90.0f*PI / 180, vec3(1.0f, 0.0f, 0.0f));
+	mat4 Mgear20 = Mgear45;
+	mat4 Mgear12 = Mgear45;
+	Mgear45 = rotate(Mgear45, angle, vec3(0.0f, 1.0f, 0.0f));
+	Mgear45 = scale(Mgear45, skala);
+	glLoadMatrixf(value_ptr(V*Mgear45));
+	Models::gear45_2.drawSolid();
+	Models::cylinder_45_12.drawSolid();
+
+	Mgear20 = translate(Mgear20, vec3(1.3f, 0.0f, 0.0f));
+	Mgear20 = rotate(Mgear20, -angle*2.25f, vec3(0.0f, 1.0f, 0.0f));		//2.25 bo 45/20
+	Mgear20 = scale(Mgear20, skala);
+	glLoadMatrixf(value_ptr(V*Mgear20));
+	Models::gear20_2.drawSolid();
+	Models::cylinder_64_20.drawSolid();		//cylinder polaczony jest z gear20
+
+	mat4 Mgear64 = Mgear20;					//gear64 polaczony z cylindrem i gear20
+	Mgear64 = translate(Mgear64, vec3(0.0f, 50.0f, 0.0f));
+	glLoadMatrixf(value_ptr(V*Mgear64));
+	Models::gear64_1.drawSolid();
+
+	//mat4 Mgear12 = Mgear45;  wczesniej jest to zeby byly w tej samej plaszczyznie juz obliczonej
+	Mgear12 = translate(Mgear12, vec3(0.0f, 1.0f, 0.0f));
+	Mgear12 = rotate(Mgear12, angle*12.0f, vec3(0.0f, 1.0f, 0.0f));			//12 bo 64*45/(12*20)
+	Mgear12 = scale(Mgear12, skala);
+	glLoadMatrixf(value_ptr(V*Mgear12));
+	Models::gear12_1.drawSolid();
 
 	glfwSwapBuffers(window);
 
@@ -176,18 +206,14 @@ int main(int argc, char **argv) {
 	initOpenGLProgram(window); //Call initialization procedure
 
 	float angle = 50;
-	float distance_cam_y = 0;
-	float distance_cam_z = 0;
 	float deltaTime = 0;
 	glfwSetTime(0);
 	//Main application loop
 	while (!glfwWindowShouldClose(window)) //As long as the window shouldnt be closed yet...
 	{
 		angle += speed*glfwGetTime();
-		distance_cam_z += speed_direction*glfwGetTime();
-		distance_cam_y += speed_right*glfwGetTime();
 		glfwSetTime(0);
-		drawScene(window, angle, distance_cam_z, distance_cam_y, deltaTime); //Execute drawing procedure
+		drawScene(window, angle,  deltaTime); //Execute drawing procedure
 		deltaTime = glfwGetTime();
 		glfwPollEvents(); //Process callback procedures corresponding to the events that took place up to now
 	}
