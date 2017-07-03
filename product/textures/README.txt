@@ -4,4 +4,4 @@ bronze1.png - gearforpinion_x, pinion_x
 
 steel1.png - gears...
 
-steel2.png - clockFace
+steel2_paper3.png - clockFace
