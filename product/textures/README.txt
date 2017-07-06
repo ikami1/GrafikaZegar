@@ -7,3 +7,5 @@ steel1.png - gears...
 steel2.png - clockFace
 
 paper3.png - clockFace_pod
+
+dwood1.png - clockBody
