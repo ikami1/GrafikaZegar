@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "constants.h"
+#include "lodepng.h"
 #include "allmodels.h"
 
 using namespace glm;
@@ -23,7 +24,7 @@ float verticalAngle = 0.0f;
 //float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.01f;
 
-
+GLuint tex[10];
 
 
 //Error processing callback procedure
@@ -33,17 +34,17 @@ void error_callback(int error, const char* description) {
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_LEFT) speed_right = -PI;
-		if (key == GLFW_KEY_RIGHT) speed_right = PI;
+		if (key == GLFW_KEY_LEFT) speed_right = PI;
+		if (key == GLFW_KEY_RIGHT) speed_right = -PI;
 		if (key == GLFW_KEY_UP) speed_direction = PI;
 		if (key == GLFW_KEY_DOWN) speed_direction = -PI;
 	}
 
 	/*if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_LEFT) position -= right * deltaTime * speed;
-		if (key == GLFW_KEY_RIGHT) position += right * deltaTime * speed_right;
-		if (key == GLFW_KEY_UP) position += direction * deltaTime * speed_direction;
-		if (key == GLFW_KEY_DOWN) position -= direction * deltaTime * speed;
+	if (key == GLFW_KEY_LEFT) position -= right * deltaTime * speed;
+	if (key == GLFW_KEY_RIGHT) position += right * deltaTime * speed_right;
+	if (key == GLFW_KEY_UP) position += direction * deltaTime * speed_direction;
+	if (key == GLFW_KEY_DOWN) position -= direction * deltaTime * speed;
 	}*/
 
 	if (action == GLFW_RELEASE) {
@@ -54,16 +55,54 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
+
+GLuint readTexture(const char* filename) {
+	GLuint tex;
+	glActiveTexture(GL_TEXTURE0);
+
+	//Wczytanie do pamiêci komputera
+	std::vector<unsigned char> image;   //Alokuj wektor do wczytania obrazka
+	unsigned width, height;   //Zmienne do których wczytamy wymiary obrazka
+							  //Wczytaj obrazek
+	unsigned error = lodepng::decode(image, width, height, filename);
+
+	if (error != 0) {
+		printf("Error while reading texture %s. Error code: %d. \n", filename, error);
+	}
+
+	//Import do pamiêci karty graficznej
+	glGenTextures(1, &tex); //Zainicjuj jeden uchwyt
+	glBindTexture(GL_TEXTURE_2D, tex); //Uaktywnij uchwyt
+									   //Wczytaj obrazek do pamiêci KG skojarzonej z uchwytem
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
+		GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //mozna zamienic styl teksturowania
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	return tex;
+}
+
 //Initialization code procedure
 void initOpenGLProgram(GLFWwindow* window) {
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_NORMALIZE);
+
 	//************Place any code here that needs to be executed once, at the program start************
 	glfwSetKeyCallback(window, key_callback); //Register key event processing callback procedure
 	glEnable(GL_DEPTH_TEST);		//wlaczenie z bufora
 	glEnable(GL_LIGHTING);			//wlaczenie cieniowania
 	glEnable(GL_LIGHT0);			//biale zrodlo swiatla za obserwatorem
-	glEnable(GL_COLOR_MATERIAL);	//wlaczenie kolorowania wielokatow
+	//glEnable(GL_COLOR_MATERIAL);	//wlaczenie kolorowania wielokatow
 	glShadeModel(GL_SMOOTH);		//cieniowanie
-	glClearColor(1,1,1,1);
+	glClearColor(1, 1, 1, 1);
+
+	tex[0] = readTexture("Images/bronze1.png");
+	tex[1] = readTexture("Images/dwood1.png");
+	tex[2] = readTexture("Images/paper3.png");
+	tex[3] = readTexture("Images/steel1.png");
+	tex[4] = readTexture("Images/steel2.png");
+	tex[5] = readTexture("Images/steel2_paper3.png");
 }
 
 mat4 macierzWidoku(GLFWwindow* window, float deltaTime) {
@@ -102,7 +141,7 @@ mat4 ustawPinion(mat4 Mpinion, float angle) {
 	Mpinion = rotate(Mpinion, 90.0f*PI / 180, vec3(1.0f, 0.0f, 0.0f));
 	Mpinion = translate(Mpinion, vec3(0.0f, -1.0f, -0.45f));
 	Mpinion = rotate(Mpinion, 7.5f*PI / 180, vec3(0.0f, 1.0f, 0.0f));
-	Mpinion = rotate(Mpinion, -angle*2, vec3(0.0f, 1.0f, 0.0f));
+	Mpinion = rotate(Mpinion, -angle * 2, vec3(0.0f, 1.0f, 0.0f));
 	Mpinion = scale(Mpinion, vec3(0.05f, 0.05f, 0.05f));
 	return Mpinion;
 }
@@ -115,7 +154,7 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 
 	angle /= 3600.0f;		// angle/10 to jeden obrot godzinowej co 10 sekund
 
-	
+
 	mat4 V = macierzWidoku(window, deltaTime);
 	mat4 M = mat4(1.0f);
 	vec3 skala = vec3(0.02f, 0.02f, 0.02f);
@@ -137,9 +176,9 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 
 	Mpinion = ustawPinion(Mpinion, angle);
 	glLoadMatrixf(value_ptr(V*Mpinion));
-	glColor3d(0.5, 0.5, 0.5);
+	//glColor3d(0.5, 0.5, 0.5);
 	Models::pinion_x.drawSolid();*/
-	glColor3d(0.5, 0.5, 0.5);
+	//glColor3d(0.5, 0.5, 0.5);
 
 	mat4 Mgear45 = M;
 	Mgear45 = translate(Mgear45, vec3(0.0f, 0.0f, 2.0f));
@@ -164,12 +203,21 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	glLoadMatrixf(value_ptr(V*Mgear64));
 	Models::gear64_1.drawSolid();
 
+	glBindTexture(GL_TEXTURE_2D, tex[0]);
+
 	//mat4 Mgear12 = Mgear45;  wczesniej jest to zeby byly w tej samej plaszczyznie juz obliczonej
 	Mgear12 = translate(Mgear12, vec3(0.0f, 1.0f, 0.0f));
+	mat4 Mclockface = Mgear12;
 	Mgear12 = rotate(Mgear12, angle*12.0f, vec3(0.0f, 1.0f, 0.0f));			//12 bo 64*45/(12*20)
 	Mgear12 = scale(Mgear12, skala);
 	glLoadMatrixf(value_ptr(V*Mgear12));
 	Models::gear12_1.drawSolid();
+
+	Mclockface = translate(Mclockface, vec3(0.0f, 1.0f, 0.0f));
+	Mclockface = rotate(Mclockface, PI, vec3(0.0f, 1.0f, 0.0f));
+	Mclockface = scale(Mclockface, skala * 4.0f);
+	glLoadMatrixf(value_ptr(V*Mclockface));
+	Models::clockFace.drawSolid();
 
 	glfwSwapBuffers(window);
 
@@ -213,11 +261,12 @@ int main(int argc, char **argv) {
 	{
 		angle += speed*glfwGetTime();
 		glfwSetTime(0);
-		drawScene(window, angle,  deltaTime); //Execute drawing procedure
+		drawScene(window, angle, deltaTime); //Execute drawing procedure
 		deltaTime = glfwGetTime();
 		glfwPollEvents(); //Process callback procedures corresponding to the events that took place up to now
 	}
-
+	
+	glDeleteTextures(10, tex); //Delete textures from memory
 	glfwDestroyWindow(window); //Delete OpenGL context and the window.
 	glfwTerminate(); //Free GLFW resources
 	exit(EXIT_SUCCESS);
