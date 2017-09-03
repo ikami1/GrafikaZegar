@@ -102,7 +102,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	tex[2] = readTexture("Images/paper3.png");
 	tex[3] = readTexture("Images/steel1.png");
 	tex[4] = readTexture("Images/steel2.png");
-	tex[5] = readTexture("Images/steel2_paper3.png");
+	//tex[5] = readTexture("Images/steel2_paper3.png");
 }
 
 mat4 macierzWidoku(GLFWwindow* window, float deltaTime) {
@@ -169,16 +169,13 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	mat4 Mpinion = Mgearforpinion;
 	Mgearforpinion = rotate(Mgearforpinion, angle, vec3(0.0f, 1.0f, 0.0f));
 	Mgearforpinion = scale(Mgearforpinion, vec3(0.05f, 0.05f, 0.05f));
-
-	glLoadMatrixf(value_ptr(V*Mgearforpinion));
-	glColor3d(1, 1, 1);
-	Models::gearforpinion_x.drawSolid();
-
 	Mpinion = ustawPinion(Mpinion, angle);
+
+	glBindTexture(GL_TEXTURE_2D, tex[0]);
+	glLoadMatrixf(value_ptr(V*Mgearforpinion));
+	Models::gearforpinion_x.drawSolid();
 	glLoadMatrixf(value_ptr(V*Mpinion));
-	//glColor3d(0.5, 0.5, 0.5);
 	Models::pinion_x.drawSolid();*/
-	//glColor3d(0.5, 0.5, 0.5);
 
 	mat4 Mgear45 = M;
 	Mgear45 = translate(Mgear45, vec3(0.0f, 0.0f, 2.0f));
@@ -187,6 +184,8 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	mat4 Mgear12 = Mgear45;
 	Mgear45 = rotate(Mgear45, angle, vec3(0.0f, 1.0f, 0.0f));
 	Mgear45 = scale(Mgear45, skala);
+
+	glBindTexture(GL_TEXTURE_2D, tex[3]);
 	glLoadMatrixf(value_ptr(V*Mgear45));
 	Models::gear45_2.drawSolid();
 	Models::cylinder_45_12.drawSolid();
@@ -194,16 +193,14 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	Mgear20 = translate(Mgear20, vec3(1.3f, 0.0f, 0.0f));
 	Mgear20 = rotate(Mgear20, -angle*2.25f, vec3(0.0f, 1.0f, 0.0f));		//2.25 bo 45/20
 	Mgear20 = scale(Mgear20, skala);
+	mat4 Mgear64 = Mgear20;					//gear64 polaczony z cylindrem i gear20
+	Mgear64 = translate(Mgear64, vec3(0.0f, 50.0f, 0.0f));
+
 	glLoadMatrixf(value_ptr(V*Mgear20));
 	Models::gear20_2.drawSolid();
 	Models::cylinder_64_20.drawSolid();		//cylinder polaczony jest z gear20
-
-	mat4 Mgear64 = Mgear20;					//gear64 polaczony z cylindrem i gear20
-	Mgear64 = translate(Mgear64, vec3(0.0f, 50.0f, 0.0f));
 	glLoadMatrixf(value_ptr(V*Mgear64));
 	Models::gear64_1.drawSolid();
-
-	glBindTexture(GL_TEXTURE_2D, tex[0]);
 
 	//mat4 Mgear12 = Mgear45;  wczesniej jest to zeby byly w tej samej plaszczyznie juz obliczonej
 	Mgear12 = translate(Mgear12, vec3(0.0f, 1.0f, 0.0f));
@@ -216,8 +213,18 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	Mclockface = translate(Mclockface, vec3(0.0f, 1.0f, 0.0f));
 	Mclockface = rotate(Mclockface, PI, vec3(0.0f, 1.0f, 0.0f));
 	Mclockface = scale(Mclockface, skala * 4.0f);
+	mat4 MclockFace_pod = Mclockface;
+	mat4 MclockBody = Mclockface;
+
+	glBindTexture(GL_TEXTURE_2D, tex[4]);
 	glLoadMatrixf(value_ptr(V*Mclockface));
 	Models::clockFace.drawSolid();
+	glBindTexture(GL_TEXTURE_2D, tex[2]);
+	glLoadMatrixf(value_ptr(V*MclockFace_pod));
+	Models::clockFace_pod.drawSolid();
+	glBindTexture(GL_TEXTURE_2D, tex[1]);
+	glLoadMatrixf(value_ptr(V*MclockBody));
+	Models::clockBody.drawSolid();
 
 	glfwSwapBuffers(window);
 
