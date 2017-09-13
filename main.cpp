@@ -210,15 +210,25 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	glLoadMatrixf(value_ptr(V*Mgear12));
 	Models::gear12_1.drawSolid();
 
-	Mclockface = translate(Mclockface, vec3(0.0f, 1.0f, 0.0f));
+	Mclockface = translate(Mclockface, vec3(0.0f, 0.2f, 0.0f));
 	Mclockface = rotate(Mclockface, PI, vec3(0.0f, 1.0f, 0.0f));
 	Mclockface = scale(Mclockface, skala * 4.0f);
 	mat4 MclockFace_pod = Mclockface;
 	mat4 MclockBody = Mclockface;
+	MclockBody = translate(MclockBody, vec3(0.0f, -0.1f, 9.0f));
+	MclockBody = scale(MclockBody, vec3(1.7f, 1.7f, 1.7f));
+	mat4 MhourHand = Mclockface;
+	MhourHand = rotate(MhourHand, PI - angle*2.25f, vec3(0.0f, 1.0f, 0.0f));
+	mat4 MminuteHand = Mclockface;
+	MminuteHand = rotate(MminuteHand, PI - angle*12.0f, vec3(0.0f, 1.0f, 0.0f));
 
 	glBindTexture(GL_TEXTURE_2D, tex[4]);
 	glLoadMatrixf(value_ptr(V*Mclockface));
 	Models::clockFace.drawSolid();
+	glLoadMatrixf(value_ptr(V*MhourHand));
+	Models::hour_hand.drawSolid();
+	glLoadMatrixf(value_ptr(V*MminuteHand));
+	Models::minute_hand.drawSolid();
 	glBindTexture(GL_TEXTURE_2D, tex[2]);
 	glLoadMatrixf(value_ptr(V*MclockFace_pod));
 	Models::clockFace_pod.drawSolid();
