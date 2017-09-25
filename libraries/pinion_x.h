@@ -9,7 +9,7 @@ namespace Models {
 		extern float normals[];
 		extern float vertexNormals[];
 		extern float texCoords[];
-		extern float colors[];
+//		extern float colors[];
 		extern unsigned int vertexCount;
 	}
 

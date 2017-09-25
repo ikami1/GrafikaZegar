@@ -1,10 +1,10 @@
-// This is a .h file for the model: gearforpinion_x
+// This is a .h file for the model: clockFace_pod
 
-#ifndef gearforpinion_x_H
-#define gearforpinion_x_H
+#ifndef clockFace_pod_H
+#define clockFace_pod_H
 #include "model.h"
 namespace Models {
-	namespace Gearforpinion_x_Internal {
+	namespace ClockFace_pod_Internal {
 		extern float vertices[];
 		extern float normals[];
 		extern float vertexNormals[];
@@ -13,13 +13,13 @@ namespace Models {
 		extern unsigned int vertexCount;
 	}
 
-	class Gearforpinion_x: public Model {
+	class ClockFace_pod: public Model {
 		public:
-			Gearforpinion_x();
-			virtual ~Gearforpinion_x();
+			ClockFace_pod();
+			virtual ~ClockFace_pod();
 			virtual void drawSolid();
 	};
 
-	extern Gearforpinion_x gearforpinion_x;
+	extern ClockFace_pod clockFace_pod;
 }
 #endif

@@ -1,10 +1,10 @@
-// This is a .h file for the model: gearforpinion_x
+// This is a .h file for the model: hour_hand
 
-#ifndef gearforpinion_x_H
-#define gearforpinion_x_H
+#ifndef hour_hand_H
+#define hour_hand_H
 #include "model.h"
 namespace Models {
-	namespace Gearforpinion_x_Internal {
+	namespace Hour_hand_Internal {
 		extern float vertices[];
 		extern float normals[];
 		extern float vertexNormals[];
@@ -13,13 +13,13 @@ namespace Models {
 		extern unsigned int vertexCount;
 	}
 
-	class Gearforpinion_x: public Model {
+	class Hour_hand: public Model {
 		public:
-			Gearforpinion_x();
-			virtual ~Gearforpinion_x();
+			Hour_hand();
+			virtual ~Hour_hand();
 			virtual void drawSolid();
 	};
 
-	extern Gearforpinion_x gearforpinion_x;
+	extern Hour_hand hour_hand;
 }
 #endif
