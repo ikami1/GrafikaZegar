@@ -175,13 +175,13 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	
 	glLoadMatrixf(value_ptr(V));
 
-	/*float lightPos1[] = { 0,0,-6,1 };
-	float lightDirection1[] = { 0,0,1,0 };
+	float lightPos1[] = { 0,0,-6,0 };
+	float lightDirection1[] = { 0,0,-1 };
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);				//pozycja swiatla
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, lightDirection1);	//kierunek swiecenia
 	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 60.0f);				//skupienie 0-rownomiernie rozproszone, 128-skupione
 	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0f);					//polowa kata rozwarcia [0;90] dla 180 jest to punktowe nie stozkowe
-	*/
+	
 
 	/*mat4 Mgearforpinion = M;
 	Mgearforpinion = translate(Mgearforpinion, vec3(1.0f, 1.0f, 0.0f));
@@ -242,7 +242,8 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	MhourHand = rotate(MhourHand, PI - angle*2.25f, vec3(0.0f, 1.0f, 0.0f));
 	mat4 MminuteHand = Mclockface;
 	MminuteHand = rotate(MminuteHand, PI - angle*12.0f, vec3(0.0f, 1.0f, 0.0f));
-	Mpendulum = translate(Mpendulum, vec3(0.0f, -5.0f, 14.0f));
+	Mpendulum = translate(Mpendulum, vec3(0.0f, -5.0f, -7.0f));
+	Mpendulum = rotate(Mpendulum, 0.5f*cos(10*angle), vec3(0.0f, 1.0f, 0.0f));
 
 	glBindTexture(GL_TEXTURE_2D, tex[4]);
 	glLoadMatrixf(value_ptr(V*Mclockface));
