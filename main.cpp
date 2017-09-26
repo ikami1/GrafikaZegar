@@ -87,22 +87,24 @@ GLuint readTexture(const char* filename) {
 void initOpenGLProgram(GLFWwindow* window) {
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_NORMALIZE);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 	//************Place any code here that needs to be executed once, at the program start************
 	glfwSetKeyCallback(window, key_callback); //Register key event processing callback procedure
 	glEnable(GL_DEPTH_TEST);		//wlaczenie z bufora
 	glEnable(GL_LIGHTING);			//wlaczenie cieniowania
 	glEnable(GL_LIGHT0);			//biale zrodlo swiatla za obserwatorem
+	glEnable(GL_LIGHT1);
 	//glEnable(GL_COLOR_MATERIAL);	//wlaczenie kolorowania wielokatow
 	glShadeModel(GL_SMOOTH);		//cieniowanie
-	glClearColor(1, 1, 1, 1);
+	glClearColor(0, 0, 0, 0);
 
 	tex[0] = readTexture("Images/bronze1.png");
 	tex[1] = readTexture("Images/dwood1.png");
 	tex[2] = readTexture("Images/paper3.png");
 	tex[3] = readTexture("Images/steel1.png");
 	tex[4] = readTexture("Images/steel2.png");
-	//tex[5] = readTexture("Images/steel2_paper3.png");
+	tex[5] = readTexture("Images/bronze3.png");
 }
 
 mat4 macierzWidoku(GLFWwindow* window, float deltaTime) {
@@ -162,6 +164,24 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(value_ptr(P));
 	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	float lightPos0[] = { 0,0,0.1,0 };		// w=0 - swiatlo punktowe; w=1 - swiatlo kierunkowe
+	float lightDirection0[] = { 0,0,-1 };		//-z -> prosto
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);				//pozycja swiatla
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, lightDirection0);	//kierunek swiecenia
+	//glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0.0f);				//skupienie 0-rownomiernie rozproszone, 128-skupione
+	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 10.0f);					//polowa kata rozwarcia [0;90] dla 180 jest to punktowe nie stozkowe
+	
+	glLoadMatrixf(value_ptr(V));
+
+	/*float lightPos1[] = { 0,0,-6,1 };
+	float lightDirection1[] = { 0,0,1,0 };
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);				//pozycja swiatla
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, lightDirection1);	//kierunek swiecenia
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 60.0f);				//skupienie 0-rownomiernie rozproszone, 128-skupione
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0f);					//polowa kata rozwarcia [0;90] dla 180 jest to punktowe nie stozkowe
+	*/
 
 	/*mat4 Mgearforpinion = M;
 	Mgearforpinion = translate(Mgearforpinion, vec3(1.0f, 1.0f, 0.0f));
@@ -217,10 +237,12 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	mat4 MclockBody = Mclockface;
 	MclockBody = translate(MclockBody, vec3(0.0f, -0.1f, 9.0f));
 	MclockBody = scale(MclockBody, vec3(1.7f, 1.7f, 1.7f));
+	mat4 Mpendulum = MclockBody;
 	mat4 MhourHand = Mclockface;
 	MhourHand = rotate(MhourHand, PI - angle*2.25f, vec3(0.0f, 1.0f, 0.0f));
 	mat4 MminuteHand = Mclockface;
 	MminuteHand = rotate(MminuteHand, PI - angle*12.0f, vec3(0.0f, 1.0f, 0.0f));
+	Mpendulum = translate(Mpendulum, vec3(0.0f, -5.0f, 14.0f));
 
 	glBindTexture(GL_TEXTURE_2D, tex[4]);
 	glLoadMatrixf(value_ptr(V*Mclockface));
@@ -235,6 +257,9 @@ void drawScene(GLFWwindow* window, float angle, float deltaTime) {
 	glBindTexture(GL_TEXTURE_2D, tex[1]);
 	glLoadMatrixf(value_ptr(V*MclockBody));
 	Models::clockBody.drawSolid();
+	glBindTexture(GL_TEXTURE_2D, tex[5]);
+	glLoadMatrixf(value_ptr(V*Mpendulum));
+	Models::pendulum.drawSolid();
 
 	glfwSwapBuffers(window);
 
